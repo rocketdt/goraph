@@ -61,6 +61,38 @@ func BFS(g Graph, id ID) []ID {
 	return rs
 }
 
+func BFSDirected(g Graph, id ID) []ID {
+	if _, err := g.GetNode(id); err != nil {
+		return nil
+	}
+
+	q := []ID{id}
+	visited := make(map[ID]bool)
+	visited[id] = true
+	rs := []ID{id}
+
+	// while Q is not empty:
+	for len(q) != 0 {
+
+		u := q[0]
+		q = q[1:len(q):len(q)]
+
+		// for each vertex w adjacent to u:
+		cmap, _ := g.GetTargets(u)
+		for _, w := range cmap {
+			// if w is not visited yet:
+			if _, ok := visited[w.ID()]; !ok {
+				q = append(q, w.ID())  // Q.push(w)
+				visited[w.ID()] = true // label w as visited
+
+				rs = append(rs, w)
+			}
+		}
+	}
+
+	return rs
+}
+
 // DFS does depth-first search, and returns the list of vertices.
 // (https://en.wikipedia.org/wiki/Depth-first_search)
 //
@@ -95,7 +127,7 @@ func DFS(g Graph, id ID) []ID {
 	for len(s) != 0 {
 
 		u := s[len(s)-1]
-		s = s[:len(s)-1 : len(s)-1]
+		s = s[: len(s)-1 : len(s)-1]
 
 		// if u is not visited yet:
 		if _, ok := visited[u]; !ok {
@@ -114,6 +146,42 @@ func DFS(g Graph, id ID) []ID {
 			}
 			pmap, _ := g.GetSources(u)
 			for _, w := range pmap {
+				// if w is not visited yet:
+				if _, ok := visited[w.ID()]; !ok {
+					s = append(s, w.ID()) // S.push(w)
+				}
+			}
+		}
+	}
+
+	return rs
+}
+
+func DFSDirected(g Graph, id ID) []ID {
+	if _, err := g.GetNode(id); err != nil {
+		return nil
+	}
+
+	s := []ID{id}
+	visited := make(map[ID]bool)
+	rs := []ID{}
+
+	// while S is not empty:
+	for len(s) != 0 {
+
+		u := s[len(s)-1]
+		s = s[: len(s)-1 : len(s)-1]
+
+		// if u is not visited yet:
+		if _, ok := visited[u]; !ok {
+			// label u as visited
+			visited[u] = true
+
+			rs = append(rs, u)
+
+			// for each vertex w adjacent to u:
+			cmap, _ := g.GetTargets(u)
+			for _, w := range cmap {
 				// if w is not visited yet:
 				if _, ok := visited[w.ID()]; !ok {
 					s = append(s, w.ID()) // S.push(w)
